@@ -1,5 +1,4 @@
 from conftest import *
-from json_data import JsonData
 
 # Endpoints data
 
