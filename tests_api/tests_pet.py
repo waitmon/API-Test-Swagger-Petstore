@@ -1,17 +1,19 @@
 from conftest import *
 
-# Endpoints data
+# Endpoints
 
 pet_url = base_url + '/pet'
 pet_id = base_url + '/pet/5'
-pet_invalid_id = base_url + '/pet/228'
+pet_id_delete = base_url + '/pet/2'
+pet_id_check_deleted = base_url + '/pet/3'
+pet_invalid_id = base_url + '/pet/10500'
 upload_image_url = base_url + '/pet/4/uploadImage'
 find_by_status_url = base_url + '/pet/findByStatus'
 
 
 @pytest.mark.method_GET
 def test_get_pet_by_valid_id():
-    """Find pet by id / Returns a single pet."""
+    """Finds pet by id / Returns a single pet."""
     response = requests.get(pet_id)
     data = response.json()
     assert response.status_code == 200, f'Expected 200 status code, got {response.status_code} instead'
@@ -32,17 +34,17 @@ def test_get_by_invalid_id():
 @pytest.mark.method_DELETE
 def test_deletes_pet():
     """Deletes a pet."""
-    response = requests.delete(pet_id)
+    response = requests.delete(pet_id_delete)
     data = response.json()
     assert response.status_code == 200, f'Expected 200 status code, got {response.status_code} instead'
-    assert S(JsonData.schema_upd_dlt_pet) == data, f'Expected {S(JsonData.schema_upd_dlt_pet)}, got {data} instead'
+    assert S(JsonData.schema_post_upd_dlt) == data, f'Expected {S(JsonData.schema_post_upd_dlt)}, got {data} instead'
 
 
 @pytest.mark.method_DELETE
 def test_deletes_deleted_pet():
     """Deletes already deleted pet and checks that response code is 404."""
-    response_1 = requests.delete(pet_id)
-    response_2 = requests.delete(pet_id)
+    response_1 = requests.delete(pet_id_check_deleted)
+    response_2 = requests.delete(pet_id_check_deleted)
     assert response_1.status_code == 200, f'Expected 200 status code, got {response_1.status_code} instead'
     assert response_2.status_code == 404, f'Expected 404 status code, got {response_2.status_code} instead'
 
@@ -53,7 +55,7 @@ def test_updates_pet_with_form_data():
     response = requests.post(pet_id, data=JsonData.update_pet)
     data = response.json()
     assert response.status_code == 200, f'Expected 200 status code, got {response.status_code} instead'
-    assert S(JsonData.schema_upd_dlt_pet) == data, f'Expected {S(JsonData.schema_upd_dlt_pet)}, got {data} instead'
+    assert S(JsonData.schema_post_upd_dlt) == data, f'Expected {S(JsonData.schema_post_upd_dlt)}, got {data} instead'
 
 
 @pytest.mark.method_POST
@@ -68,7 +70,7 @@ def test_upload_image():
 
 @pytest.mark.method_POST
 def test_add_new_pet():
-    """Add a new pet to the store."""
+    """Adds a new pet to the store."""
     response = requests.post(pet_url, json=JsonData.add_new_pet)
     data = response.json()
     assert response.status_code == 200, f'Expected 200 status code, got {response.status_code} instead'
@@ -79,7 +81,7 @@ def test_add_new_pet():
 
 @pytest.mark.method_PUT
 def test_update_pet():
-    """Update an existing pet."""
+    """Updates an existing pet."""
     response = requests.put(pet_url, json=JsonData.update_pet)
     data = response.json()
     assert response.status_code == 200, f'Expected 200 status code, got {response.status_code} instead'
@@ -91,6 +93,6 @@ def test_update_pet():
 @pytest.mark.method_GET
 @pytest.mark.parametrize('status', ['pending', 'available', 'sold'])
 def test_find_by_status(status):
-    """Finds Pets by status."""
+    """Finds pets by status."""
     response = requests.get(find_by_status_url, params=status)
     assert response.status_code == 200, f'Expected 200 status code, got {response.status_code} instead'
